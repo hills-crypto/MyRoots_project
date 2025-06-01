@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MyRoots - Family Tree</title>
+
+  <!-- Treant.js dependencies -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, #a2d4ec, #f2f2f2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      width: 350px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    input, textarea {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      width: 95%;
+      padding: 10px;
+      margin-top: 15px;
+      background-color: #2e8b57;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #276a45;
+    }
+    .toggle {
+      margin-top: 15px;
+      color: #0077cc;
+      cursor: pointer;
+      user-select: none;
+    }
+    .hidden {
+      display: none;
+    }
+    #tree-container {
+      width: 100%;
+      max-width: 900px;
+      height: auto;
+      margin-top: 40px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+      overflow: auto;
+    }
+    .nodeStyle {
+      background: #2e8b57;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      text-align: center;
+      min-width: 100px;
+    }
+    #logout-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #cc3333;
+    }
+  </style>
+</head>
+<body>
+
+  <button id="logout-button" class="hidden" onclick="logout()">Logout</button>
+
+  <div class="container" id="auth-container">
+    <h1 id="form-title">Sign In</h1>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="submitForm()" id="form-button">Sign In</button>
+    <p class="toggle" onclick="toggleForm()" id="toggle-text">Don't have an account? Register</p>
+  </div>
+
+  <div class="container hidden" id="family-form">
+    <h1>Family Information</h1>
+    <input type="text" id="fullName" placeholder="Your Full Name" />
+    <input type="text" id="fatherName" placeholder="Father's Name" />
+    <input type="text" id="motherName" placeholder="Mother's Name" />
+    <input type="number" id="siblingCount" placeholder="Number of Known Siblings" />
+    <textarea id="knownMembers" placeholder="Other Known Family Members (comma-separated)"></textarea>
+    <button onclick="submitFamilyInfo()">Submit Family Info</button>
+    <button onclick="loadFamilyTree()" style="background-color: #005f35; margin-top: 10px;">View My Family Tree</button>
+    <button onclick="exportTreeAsPDF()" style="background-color: #444444; margin-top: 10px;">Export Tree as PDF</button>
+  </div>
+
+  <div id="tree-container"></div>
+
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>
