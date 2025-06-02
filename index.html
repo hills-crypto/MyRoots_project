@@ -1,128 +1,688 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MyRoots - Family Tree</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MyRoots - Family Tree</title>
 
-  <!-- Treant.js dependencies -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Treant.js CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.css" />
 
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom right, #a2d4ec, #f2f2f2);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-      position: relative;
-    }
-    .container {
-      background: white;
-      padding: 40px;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-      text-align: center;
-      width: 350px;
-      margin-bottom: 20px;
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: #333;
-    }
-    input, textarea {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-    button {
-      width: 95%;
-      padding: 10px;
-      margin-top: 15px;
-      background-color: #2e8b57;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background-color: #276a45;
-    }
-    .toggle {
-      margin-top: 15px;
-      color: #0077cc;
-      cursor: pointer;
-      user-select: none;
-    }
-    .hidden {
-      display: none;
-    }
-    #tree-container {
-      width: 100%;
-      max-width: 900px;
-      height: auto;
-      margin-top: 40px;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-      overflow: auto;
-    }
-    .nodeStyle {
-      background: #2e8b57;
-      color: white;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: bold;
-      text-align: center;
-      min-width: 100px;
-    }
-    #logout-button {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background-color: #cc3333;
-    }
-  </style>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom right, #a2d4ec, #f2f2f2);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .container {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    width: 400px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  input, textarea, button {
+    width: 90%;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+  button {
+    background-color: #2e8b57;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #276a45;
+  }
+  .toggle {
+    color: #0077cc;
+    cursor: pointer;
+    user-select: none;
+    margin-top: 10px;
+  }
+  .hidden {
+    display: none;
+  }
+  #tree-container {
+    width: 100%;
+    max-width: 1000px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    min-height: 400px;
+    overflow: auto;
+    margin-top: 40px;
+    padding: 20px;
+  }
+  .nodeStyle.parent {
+    background: #2e8b57 !important; /* dark green */
+    color: white !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    min-width: 110px !important;
+  }
+  .nodeStyle.sibling {
+    background: #1e90ff !important; /* dodger blue */
+    color: white !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    min-width: 110px !important;
+  }
+  .nodeStyle.grandchild {
+    background: #800080 !important; /* purple */
+    color: white !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    min-width: 110px !important;
+  }
+  #logout-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #cc3333;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: none;
+    z-index: 1000;
+  }
+  .sibling-block {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    background: #f9f9f9;
+  }
+  .sibling-block h4 {
+    margin: 0 0 5px 0;
+  }
+  .add-child-btn {
+    background-color: #0077cc;
+    margin-top: 5px;
+  }
+  .remove-btn {
+    background-color: #cc0000;
+    margin-left: 10px;
+    padding: 3px 7px;
+    font-size: 14px;
+  }
+</style>
 </head>
 <body>
 
-  <button id="logout-button" class="hidden" onclick="logout()">Logout</button>
+<button id="logout-button">Logout</button>
 
-  <div class="container" id="auth-container">
-    <h1 id="form-title">Sign In</h1>
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="submitForm()" id="form-button">Sign In</button>
-    <p class="toggle" onclick="toggleForm()" id="toggle-text">Don't have an account? Register</p>
+<!-- Authentication Container -->
+<div class="container" id="auth-container">
+  <h1 id="form-title">Sign In</h1>
+  <input type="email" id="email" placeholder="Email" required />
+  <input type="password" id="password" placeholder="Password" required />
+  <button id="form-button">Sign In</button>
+  <p class="toggle" id="toggle-text">Don't have an account? Register</p>
+</div>
+
+<!-- Family Info Form -->
+<div class="container hidden" id="family-form">
+  <h1>Family Information</h1>
+  
+  <input type="text" id="fullName" placeholder="Your Full Name" />
+  <input type="text" id="fatherName" placeholder="Father's Name" />
+  <input type="text" id="motherName" placeholder="Mother's Name" />
+
+  <hr style="margin:20px 0;" />
+
+  <div id="siblings-container">
+    <h3>Siblings</h3>
+    <!-- Sibling blocks added here dynamically -->
   </div>
 
-  <div class="container hidden" id="family-form">
-    <h1>Family Information</h1>
-    <input type="text" id="fullName" placeholder="Your Full Name" />
-    <input type="text" id="fatherName" placeholder="Father's Name" />
-    <input type="text" id="motherName" placeholder="Mother's Name" />
-    <input type="number" id="siblingCount" placeholder="Number of Known Siblings" />
-    <textarea id="knownMembers" placeholder="Other Known Family Members (comma-separated)"></textarea>
-    <button onclick="submitFamilyInfo()">Submit Family Info</button>
-    <button onclick="loadFamilyTree()" style="background-color: #005f35; margin-top: 10px;">View My Family Tree</button>
-    <button onclick="exportTreeAsPDF()" style="background-color: #444444; margin-top: 10px;">Export Tree as PDF</button>
-  </div>
+  <button id="add-sibling-btn" type="button">Add Sibling</button>
 
-  <div id="tree-container"></div>
+  <button id="submit-family-info" style="margin-top:20px;">Submit Family Info</button>
+  <button id="view-tree-btn" style="background-color: #005f35; margin-top: 10px;">View My Family Tree</button>
+  <button id="export-pdf" style="background-color: #444444; margin-top: 10px;">Export Tree as PDF</button>
+</div>
 
-  <script type="module" src="app.js"></script>
+<!-- Family Tree Container -->
+<div id="tree-container"></div>
+
+<!-- Treant.js & dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+  // Elements references
+  const authContainer = document.getElementById('auth-container');
+  const familyForm = document.getElementById('family-form');
+  const formTitle = document.getElementById('form-title');
+  const toggleText = document.getElementById('toggle-text');
+  const formButton = document.getElementById('form-button');
+  const logoutButton = document.getElementById('logout-button');
+  const siblingsContainer = document.getElementById('siblings-container');
+  const addSiblingBtn = document.getElementById('add-sibling-btn');
+  const submitFamilyInfoBtn = document.getElementById('submit-family-info');
+  const viewTreeBtn = document.getElementById('view-tree-btn');
+  const exportPdfBtn = document.getElementById('export-pdf');
+
+  let isRegisterMode = false;
+
+  // User keys for localStorage
+  const USERS_KEY = 'myroots_users';
+  const LOGGED_IN_USER_KEY = 'myroots_logged_in_user';
+  const FAMILY_DATA_KEY = 'familyData';
+
+  // Toggle between Sign In and Register form
+  toggleText.addEventListener('click', () => {
+    isRegisterMode = !isRegisterMode;
+    if (isRegisterMode) {
+      formTitle.textContent = 'Register';
+      formButton.textContent = 'Register';
+      toggleText.textContent = 'Already have an account? Sign In';
+    } else {
+      formTitle.textContent = 'Sign In';
+      formButton.textContent = 'Sign In';
+      toggleText.textContent = "Don't have an account? Register";
+    }
+  });
+
+  // Helper functions for users
+  function getUsers() {
+    return JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+  }
+  function saveUsers(users) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+  function saveLoggedInUser(email) {
+    localStorage.setItem(LOGGED_IN_USER_KEY, email);
+  }
+  function getLoggedInUser() {
+    return localStorage.getItem(LOGGED_IN_USER_KEY);
+  }
+  function clearLoggedInUser() {
+    localStorage.removeItem(LOGGED_IN_USER_KEY);
+  }
+
+  // Login/Register handler
+  formButton.addEventListener('click', () => {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!email || !password) {
+      alert('Please enter both email and password.');
+      return;
+    }
+
+    const users = getUsers();
+
+    if (isRegisterMode) {
+      if (users[email]) {
+        alert('This email is already registered. Please sign in.');
+        return;
+      }
+      users[email] = { password };
+      saveUsers(users);
+      alert('Registration successful! You can now sign in.');
+      toggleText.click();
+    } else {
+      if (!users[email]) {
+        alert('No account found with this email. Please register first.');
+        return;
+      }
+      if (users[email].password !== password) {
+        alert('Incorrect password. Please try again.');
+        return;
+      }
+      saveLoggedInUser(email);
+      showFamilyForm();
+    }
+  });
+
+  // Show family info form
+  function showFamilyForm() {
+    authContainer.classList.add('hidden');
+    familyForm.classList.remove('hidden');
+    logoutButton.style.display = 'block';
+    loadFamilyDataToForm();
+  }
+
+  // Logout
+  logoutButton.addEventListener('click', () => {
+    clearLoggedInUser();
+    familyForm.classList.add('hidden');
+    authContainer.classList.remove('hidden');
+    logoutButton.style.display = 'none';
+    clearFamilyForm();
+    clearSiblingsUI();
+  });
+
+  // Clear family form
+  function clearFamilyForm() {
+    document.getElementById('fullName').value = '';
+    document.getElementById('fatherName').value = '';
+    document.getElementById('motherName').value = '';
+  }
+
+  // Clear siblings UI
+  function clearSiblingsUI() {
+    siblingsContainer.innerHTML = '<h3>Siblings</h3>';
+  }
+
+  // Add sibling block UI with option to add children
+  function addSiblingBlock(sibling = null) {
+    // sibling = { name: string, children: [string] }
+
+    const siblingBlock = document.createElement('div');
+    siblingBlock.classList.add('sibling-block');
+
+    const h4 = document.createElement('h4');
+    h4.textContent = 'Sibling';
+    siblingBlock.appendChild(h4);
+
+    const siblingNameInput = document.createElement('input');
+    siblingNameInput.type = 'text';
+    siblingNameInput.placeholder = 'Sibling Full Name';
+    siblingNameInput.value = sibling?.name || '';
+    siblingNameInput.required = true;
+    siblingBlock.appendChild(siblingNameInput);
+
+    // Container for children
+    const childrenContainer = document.createElement('div');
+    childrenContainer.style.marginLeft = '20px';
+    siblingBlock.appendChild(childrenContainer);
+
+    const addChildBtn = document.createElement('button');
+    addChildBtn.type = 'button';
+    addChildBtn.textContent = 'Add Child (Next Generation)';
+    addChildBtn.classList.add('add-child-btn');
+    siblingBlock.appendChild(addChildBtn);
+
+    // Add remove sibling button
+    const removeSiblingBtn = document.createElement('button');
+    removeSiblingBtn.type = 'button';
+    removeSiblingBtn.textContent = 'Remove Sibling';
+    removeSiblingBtn.classList.add('remove-btn');
+    siblingBlock.appendChild(removeSiblingBtn);
+
+    // Remove sibling event
+    removeSiblingBtn.addEventListener('click', () => {
+      siblingsContainer.removeChild(siblingBlock);
+    });
+
+    // Add children inputs under this sibling
+    function addChildInput(value = '') {
+      const childDiv = document.createElement('div');
+      childDiv.style.marginTop = '5px';
+
+      const childInput = document.createElement('input');
+      childInput.type = 'text';
+      childInput.placeholder = 'Child Full Name';
+      childInput.value = value;
+      childInput.required = true;
+      childDiv.appendChild(childInput);
+
+      // Button to add grandchild below this child
+      const addGrandChildBtn = document.createElement('button');
+      addGrandChildBtn.type = 'button';
+      addGrandChildBtn.textContent = 'Add Grandchild';
+      addGrandChildBtn.style.marginLeft = '10px';
+      addGrandChildBtn.style.backgroundColor = '#6a0dad';
+      addGrandChildBtn.style.color = 'white';
+      addGrandChildBtn.style.border = 'none';
+      addGrandChildBtn.style.padding = '5px 7px';
+      addGrandChildBtn.style.borderRadius = '5px';
+      childDiv.appendChild(addGrandChildBtn);
+
+      // Container for grandchildren
+      const grandChildrenContainer = document.createElement('div');
+      grandChildrenContainer.style.marginLeft = '20px';
+      childDiv.appendChild(grandChildrenContainer);
+
+      // Add remove child button
+      const removeChildBtn = document.createElement('button');
+      removeChildBtn.type = 'button';
+      removeChildBtn.textContent = 'Remove Child';
+      removeChildBtn.style.marginLeft = '10px';
+      removeChildBtn.style.backgroundColor = '#cc0000';
+      removeChildBtn.style.color = 'white';
+      removeChildBtn.style.border = 'none';
+      removeChildBtn.style.padding = '5px 7px';
+      removeChildBtn.style.borderRadius = '5px';
+      childDiv.appendChild(removeChildBtn);
+
+      // Remove child event
+      removeChildBtn.addEventListener('click', () => {
+        childrenContainer.removeChild(childDiv);
+      });
+
+      // Add grandchild input
+      addGrandChildBtn.addEventListener('click', () => {
+        const grandchildDiv = document.createElement('div');
+        grandchildDiv.style.marginTop = '3px';
+
+        const grandchildInput = document.createElement('input');
+        grandchildInput.type = 'text';
+        grandchildInput.placeholder = 'Grandchild Full Name';
+        grandchildInput.required = true;
+        grandchildDiv.appendChild(grandchildInput);
+
+        // Remove grandchild button
+        const removeGrandchildBtn = document.createElement('button');
+        removeGrandchildBtn.type = 'button';
+        removeGrandchildBtn.textContent = 'Remove Grandchild';
+        removeGrandchildBtn.style.marginLeft = '10px';
+        removeGrandchildBtn.style.backgroundColor = '#cc0000';
+        removeGrandchildBtn.style.color = 'white';
+        removeGrandchildBtn.style.border = 'none';
+        removeGrandchildBtn.style.padding = '5px 7px';
+        removeGrandchildBtn.style.borderRadius = '5px';
+        grandchildDiv.appendChild(removeGrandchildBtn);
+
+        removeGrandchildBtn.addEventListener('click', () => {
+          grandChildrenContainer.removeChild(grandchildDiv);
+        });
+
+        grandChildrenContainer.appendChild(grandchildDiv);
+      });
+
+      childrenContainer.appendChild(childDiv);
+    }
+
+    // Preload children if any
+    if (sibling?.children?.length) {
+      sibling.children.forEach((child) => {
+        addChildInput(child.name, child.grandchildren);
+      });
+    }
+
+    addChildBtn.addEventListener('click', () => {
+      addChildInput();
+    });
+
+    siblingsContainer.appendChild(siblingBlock);
+  }
+
+  // Add sibling button event
+  addSiblingBtn.addEventListener('click', () => {
+    addSiblingBlock();
+  });
+
+  // Save family data on submit
+  submitFamilyInfoBtn.addEventListener('click', () => {
+    const fullName = document.getElementById('fullName').value.trim();
+    const fatherName = document.getElementById('fatherName').value.trim();
+    const motherName = document.getElementById('motherName').value.trim();
+
+    if (!fullName || !fatherName || !motherName) {
+      alert('Please fill in your full name, father and mother names.');
+      return;
+    }
+
+    // Gather siblings data
+    const siblings = [];
+    const siblingBlocks = siblingsContainer.querySelectorAll('.sibling-block');
+    for (const block of siblingBlocks) {
+      const siblingName = block.querySelector('input[type="text"]').value.trim();
+      if (!siblingName) {
+        alert('Please fill all sibling names.');
+        return;
+      }
+
+      // Gather children for this sibling
+      const children = [];
+      const childrenDivs = block.querySelectorAll('div > div'); // nested children container > childDiv
+      // We can do a better selector: children container is second child in siblingBlock after input and h4,
+      // but safer is to find direct children inputs inside the sibling block childrenContainer.
+      // We keep reference to childrenContainer to be sure:
+      const childrenContainer = block.querySelector('div:nth-of-type(2)');
+      if (childrenContainer) {
+        const childDivs = childrenContainer.querySelectorAll('div');
+        childDivs.forEach(childDiv => {
+          const childInput = childDiv.querySelector('input[type="text"]');
+          if (!childInput) return;
+          const childName = childInput.value.trim();
+          if (!childName) {
+            alert('Please fill all children names.');
+            throw 'Child name empty';
+          }
+          // Gather grandchildren of this child
+          const grandChildren = [];
+          const grandChildrenContainer = childDiv.querySelector('div');
+          if (grandChildrenContainer) {
+            const grandchildInputs = grandChildrenContainer.querySelectorAll('input[type="text"]');
+            grandchildInputs.forEach(gcInput => {
+              const gcName = gcInput.value.trim();
+              if (gcName) grandChildren.push(gcName);
+            });
+          }
+          children.push({ name: childName, grandchildren: grandChildren });
+        });
+      }
+
+      siblings.push({ name: siblingName, children });
+    }
+
+    // Save data to localStorage under logged in user key
+    const email = getLoggedInUser();
+    if (!email) {
+      alert('User session expired. Please login again.');
+      location.reload();
+      return;
+    }
+
+    const familyData = {
+      fullName, fatherName, motherName, siblings,
+    };
+
+    localStorage.setItem(FAMILY_DATA_KEY + '_' + email, JSON.stringify(familyData));
+    alert('Family information saved!');
+  });
+
+  // Load family data back into form if exists
+  function loadFamilyDataToForm() {
+    clearFamilyForm();
+    clearSiblingsUI();
+
+    const email = getLoggedInUser();
+    if (!email) return;
+
+    const savedData = localStorage.getItem(FAMILY_DATA_KEY + '_' + email);
+    if (!savedData) return;
+
+    try {
+      const familyData = JSON.parse(savedData);
+      document.getElementById('fullName').value = familyData.fullName || '';
+      document.getElementById('fatherName').value = familyData.fatherName || '';
+      document.getElementById('motherName').value = familyData.motherName || '';
+
+      if (familyData.siblings && familyData.siblings.length) {
+        familyData.siblings.forEach(sibling => {
+          addSiblingBlock(sibling);
+        });
+      }
+    } catch {
+      // ignore parsing error
+    }
+  }
+
+  // Build family tree config for Treant.js
+  function buildTreeConfig(familyData) {
+    const nodes = {};
+    const connectors = [];
+
+    // Root (Mother & Father container)
+    nodes['parents'] = {
+      text: {
+        name: familyData.fatherName + ' & ' + familyData.motherName,
+        title: 'Parents',
+      },
+      HTMLclass: 'parent',
+    };
+
+    // User node (self)
+    nodes['self'] = {
+      parent: 'parents',
+      text: {
+        name: familyData.fullName,
+        title: 'You',
+      },
+      HTMLclass: 'sibling',
+    };
+
+    // Add siblings
+    familyData.siblings.forEach((sibling, i) => {
+      const sid = 'sibling' + i;
+      nodes[sid] = {
+        parent: 'parents',
+        text: {
+          name: sibling.name,
+          title: 'Sibling',
+        },
+        HTMLclass: 'sibling',
+      };
+
+      // Add children of sibling
+      sibling.children.forEach((child, j) => {
+        const cid = `${sid}_child${j}`;
+        nodes[cid] = {
+          parent: sid,
+          text: {
+            name: child.name,
+            title: 'Child',
+          },
+          HTMLclass: 'sibling',
+        };
+
+        // Add grandchildren
+        child.grandchildren.forEach((gcName, k) => {
+          const gcid = `${cid}_grandchild${k}`;
+          nodes[gcid] = {
+            parent: cid,
+            text: {
+              name: gcName,
+              title: 'Grandchild',
+            },
+            HTMLclass: 'grandchild',
+          };
+        });
+      });
+    });
+
+    // Treant config object
+    const config = {
+      chart: {
+        container: '#tree-container',
+        connectors: {
+          type: 'bCurve',
+          style: {
+            stroke: '#ccc',
+            'stroke-width': 2,
+          }
+        },
+        node: {
+          HTMLclass: 'nodeStyle',
+        },
+        animateOnInit: true,
+        levelSeparation: 40,
+        siblingSeparation: 25,
+        subTeeSeparation: 25,
+        rootOrientation: 'NORTH', // Parents on top, children below
+      },
+      nodeStructure: nodes['parents'],
+      children: [],
+    };
+
+    // We must convert nodes structure into Treant format
+
+    // Build recursive children array
+    function buildChildren(nodeId) {
+      const childrenArr = [];
+      for (const key in nodes) {
+        if (nodes[key].parent === nodeId) {
+          const childNode = {
+            text: nodes[key].text,
+            HTMLclass: nodes[key].HTMLclass,
+          };
+          const grandKids = buildChildren(key);
+          if (grandKids.length) childNode.children = grandKids;
+          childrenArr.push(childNode);
+        }
+      }
+      return childrenArr;
+    }
+
+    config.nodeStructure.children = buildChildren('parents');
+
+    return config;
+  }
+
+  // Render family tree
+  let treantInstance = null;
+  viewTreeBtn.addEventListener('click', () => {
+    const email = getLoggedInUser();
+    if (!email) {
+      alert('Please login first.');
+      return;
+    }
+    const savedData = localStorage.getItem(FAMILY_DATA_KEY + '_' + email);
+    if (!savedData) {
+      alert('No family info saved. Please submit family info first.');
+      return;
+    }
+    const familyData = JSON.parse(savedData);
+    document.getElementById('tree-container').innerHTML = '';
+    const config = buildTreeConfig(familyData);
+
+    // Render Treant tree
+    if (treantInstance) {
+      treantInstance.tree.cleanup();
+    }
+    treantInstance = new Treant(config);
+  });
+
+  // Export tree as PDF, fitting the full tree
+  exportPdfBtn.addEventListener('click', () => {
+    const treeDiv = document.getElementById('tree-container');
+    if (!treeDiv.innerHTML.trim()) {
+      alert('Please generate the family tree first.');
+      return;
+    }
+    html2canvas(treeDiv, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jspdf.jsPDF('landscape', 'pt', [canvas.width, canvas.height]);
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('family_tree.pdf');
+    });
+  });
+
+  // On page load - check if user logged in
+  window.onload = () => {
+    if (getLoggedInUser()) {
+      showFamilyForm();
+    }
+  };
+</script>
 
 </body>
 </html>
